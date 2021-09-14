@@ -86,7 +86,7 @@ table_stat = table %>% group_by(Bacteria, Target.oligo, CasTn, Target.Gene) %>% 
 )
 
 table_stat$mean.pheno[grep("Vio", table_stat$Target.oligo)] <- c(100)
-# Violacein all mutants presented violet
+# All Violacein mutants presented violet
 table = table[!table$Target.oligo == "before-2517",]
 # Remove 2517 before arginine addition
 
@@ -187,7 +187,8 @@ kruskal.test(pp_sglength$mean.pcr ~ pp_sglength$length.bp.)
 ########################################################
 
 
-## Pearson correlation
+## Pearson correlations
+## agreement between results pheno/genotype
 ########################
 cor_all = cor.test(table_stat$mean.pheno,
                    table_stat$mean.pcr,
@@ -291,7 +292,7 @@ te$CFU = as.numeric(as.character(te$CFU))
 te$bac_cas = paste(te$Bacteria, te$CasTn, sep = "_")
 te$bac_target = paste(te$Bacteria, te$Target, sep = "_")
 
-### CFU by bacteri and CasTn
+### CFU by bacteria and CasTn
 table1(
   ~ CFU |
     bac_cas ,
@@ -310,7 +311,7 @@ table1(
   data = te1,
   transpose = TRUE,
   overall = FALSE,
-  footnote = "BT Transformation efficiency by sgRNA.",
+  footnote = "Bt Transformation efficiency by sgRNA.",
   rowlabelhead = "sgRNA Target"
 )
 
@@ -321,7 +322,7 @@ table1(
   data = te1,
   transpose = TRUE,
   overall = FALSE,
-  footnote = "PP Transformation efficiency by sgRNA.",
+  footnote = "Pp Transformation efficiency by sgRNA.",
   rowlabelhead = "sgRNA Target"
 )
 
@@ -332,7 +333,7 @@ table1(
   data = te1,
   transpose = TRUE,
   overall = FALSE,
-  footnote = "AF Transformation efficiency by sgRNA.",
+  footnote = "Af Transformation efficiency by sgRNA.",
   rowlabelhead = "sgRNA Target"
 )
 ########################################################
@@ -384,15 +385,15 @@ files = lapply(files, function(x) {
 name <- as.list(names(files)) ##Make list of names
 for (i in seq_along(files[grep("P.*nomic", names(files))])) {
   files[grep("P.*nomic", names(files))][[i]][, 1] <- "chr1"
-} #Pputida first columns to chr1
+} #Pp first columns to chr1 (only has one chromosome)
 
-## Separate each DF in list by chromosome/plasmid
+## Separate each df in list by chromosome/plasmid
 files2 <-
   lapply(files, function(x)
     split(x, x[, 1])) ##Split into unique chromosomes
 files2 <-
   sapply(files2, `[`, 1:6, simplify = TRUE) ##Iterate over every 6 elements in list
-files2 <- files2[lapply(files2, length) > 0] ##Remove empty DF
+files2 <- files2[lapply(files2, length) > 0] ##Remove empty df
 
 ## Give unique names to df
 name <-
@@ -541,7 +542,7 @@ circular.graph <- function(dataset, x, y, name, angle) {
       axis.ticks.y = element_blank()
     ) +
     coord_polar()
-} #Circulat plot
+} #Circular plot
 
 linear.graph.plasmids <- function(dataset, x, y, name, z) {
   require(ggplot2)
@@ -593,7 +594,7 @@ linear.graph.simple <- function(dataset, x, y, name, z) {
     ) +
     ggtitle(c(name)) +
     theme(legend.position = "none")
-}##Basic plot
+}##Basic plot, no percentage or color line
 
 linear.graph <- function(dataset, x, y, name, coord1, coord2, z) {
   require(ggplot2)
@@ -650,18 +651,20 @@ linear.graph <- function(dataset, x, y, name, coord1, coord2, z) {
     ) +
     ggtitle(c(name)) +
     theme(legend.position = "none")
-} #Colro/Percent plot
+} # Linear graph with color and percent plot
+
 ##Use original proportion and define color coordinates
 #linear.graph(bed,2,4,"Name") ##Test
 ## Function to graph circular chromosome TnSeq hits
-## data = dataset
-## x= col number with Chr coordinate
+## data = dataset in form of data frame
+## x= col number with chromosome coordinate (either upper or lower)
 ## y = col number for depth (TnSeq read count)
 ## z = upper limit y coordinate
 ## name = name to parse on to ggtitle
 
 
-plots.circ <- mapply(function(x, y)
+plots.circ <-
+  mapply(function(x, y)
   circular.graph(x, 2, 4, y, angle = 25)
   ,
   files2,
@@ -675,7 +678,8 @@ plots.lin <-
     name,
     SIMPLIFY = FALSE) #Basic plotting for plasmids
 
-plots.lin <- mapply(function(x, y)
+plots.lin <- 
+  mapply(function(x, y)
   linear.graph.simple(x, 2, 4, y, 5e+04),
   files2,
   name,
@@ -704,7 +708,7 @@ plots.lin[1]
 # AF eyfp - 1771000, 1772000 #At2686.*
 # AF CysD - 816000,817000 #At25.*|At27.*
 
-# linear plots bulks ggave
+# linear plots ggsave in bulk
 mapply(
   function(x, y)
     ggsave(
@@ -728,7 +732,7 @@ mapply(
 #name2 <- name[grep(".*omic.*",name)]; name2 ##Name of select plots to save
 #mapply(function(x,y)ggsave(paste0(y,".png"),x,path = ., device = "png",units = "in",height = 1.5,width = 6, dpi =620),plots2,name2)
 
-## Save circular plot
+## Save circular plots in bluk
 #plots2 <-plots.circ[c(5)]
 #name2 <- name[c(5)]
 #mapply(function(x,y)ggsave(paste0(y,".png"),x,path = ., device = "png",units = "in",height = 6,width = 6, dpi =620),plots2,name2)
@@ -741,7 +745,7 @@ colnames(data) <- c("Chrom", "TnStart", "TnStop", "depth")
 ## bedgraphs with bin= 1 bp for zoomed-in graphs
 
 data <-
-  data[data$TnStart > 2263000 & data$TnStop < 2264000, ] ##Pp trpF
+  data[data$TnStart > 2263000 & data$TnStop < 2264000, ] ##Pp trpF target
 
 ## Ranges used to plot
 ## 322300 323000  Bt eyfp
